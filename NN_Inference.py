@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+import numpy
 import torch
 from tqdm import tqdm
 import SoftNet
@@ -63,46 +64,49 @@ def performance_inference(net, train, mode):
     """Preparation"""
     inference_device = get('Inference_device')  # 指定推理设备
     if get('Train_dataset_type') == 'MNIST':
-        activity = [4 * 10 * 3 / (14 * 14 * 3 * 4),
-                    12 * 10 * 4 / (7 * 7 * 24 * 4),
+        activity = [4 * 10 * 3 / (14 * 14 * 3 * 2 * 2),
+                    12 * 10 * 4 / (7 * 7 * 24 * 2 * 2),
                     4 * 100 * 10 / (1176 * 512),
                     4 * 100 * 10 / (512 * 10)]
-        t_pipeline_array = [(19.6 * 1) / get('Clock_freq'),
-                            (4.9 * 6) / get('Clock_freq'),
-                            (51.2 * 11.76 / 4) / get('Clock_freq'),
-                            (5.12 / 4) / get('Clock_freq')]
-        t_pipeline_peri = [3 / get('Clock_freq'),
-                           4 / get('Clock_freq'),
-                           4 / get('Clock_freq'),
-                           4 / get('Clock_freq')]
+        t_pipeline_array = [(19.6 * 1 + 3) / get('Clock_freq'),
+                            (4.9 * 6 + 4) / get('Clock_freq'),
+                            (51.2 * 11.76 / 4 + 4) / get('Clock_freq'),
+                            (5.12 / 4 + 4) / get('Clock_freq')]
+        t_pipeline_cycles = [1, 1, 1, 1]
+        # activity = [4 * 10 * 3 / (14 * 14 * 3 * 2 * 2),
+        #             12 * 10 * 4 / (7 * 7 * 24 * 2 * 2 * 3),
+        #             4 * 100 * 10 / (1176 * 512),
+        #             4 * 100 * 10 / (512 * 10)]
+        # t_pipeline_array = [(numpy.ceil(19.6) * 1) / get('Clock_freq'),
+        #                     (numpy.ceil(4.9) * 6) / get('Clock_freq'),
+        #                     (numpy.ceil(51.2) * numpy.ceil(11.76) / 4) / get('Clock_freq'),
+        #                     (numpy.ceil(5.12) / 4) / get('Clock_freq')]
+        # t_pipeline_cycles = [3 * 10, 4 * 10, 4 * 10, 4 * 10]
         total_ops = 14 * 14 * 3 * (2 * 2) + 7 * 7 * 24 * (2 * 2 * 3) + 1176 * 512 + 512 * 10
         custom_transformX = None
     elif get('Train_dataset_type') == 'CIFAR10':
-        # activity = [12 * 10 * 4 / (16 * 16 * 64 * 4),
-        #             100 * 10 * 4 / (7 * 7 * 64 * 4),
-        #             100 * 10 * 4 / (3136 * 1024),
-        #             100 * 10 * 4 / (1024 * 512),
-        #             100 * 10 * 4 / (512 * 10)]
-        # t_pipeline_array = [(16 * 25.6) / get('Clock_freq'),
-        #                     (4.9 * 2.56 * 64 / 4) / get('Clock_freq'),
-        #                     (102.4 * 31.36 / 4) / get('Clock_freq'),
-        #                     (51.2 * 10.24 / 4) / get('Clock_freq'),
-        #                     (5.12 / 4) / get('Clock_freq')]
-        activity = [12 * 10 * 8 / (16 * 16 * 64 * 4),
-                    100 * 10 * 8 / (7 * 7 * 64 * 4),
+        activity = [12 * 10 * 8 / (16 * 16 * 64 * 2 * 2),
+                    100 * 10 * 8 / (7 * 7 * 64 * 2 * 2),
                     100 * 10 * 8 / (3136 * 1024),
                     100 * 10 * 8 / (1024 * 512),
                     100 * 10 * 4 / (512 * 10)]
-        t_pipeline_array = [(8 * 25.6) / get('Clock_freq'),
-                            (4.9 * 2.56 * 64 / 8) / get('Clock_freq'),
-                            (102.4 * 31.36 / 8) / get('Clock_freq'),
-                            (51.2 * 10.24 / 8) / get('Clock_freq'),
-                            (5.12 / 4) / get('Clock_freq')]
-        t_pipeline_peri = [4 / get('Clock_freq'),
-                           4 / get('Clock_freq'),
-                           4 / get('Clock_freq'),
-                           4 / get('Clock_freq'),
-                           4 / get('Clock_freq')]
+        t_pipeline_array = [(8 * 25.6 + 4) / get('Clock_freq'),
+                            (4.9 * 2.56 * 64 / 8 + 4) / get('Clock_freq'),
+                            (102.4 * 31.36 / 8 + 4) / get('Clock_freq'),
+                            (51.2 * 10.24 / 8 + 4) / get('Clock_freq'),
+                            (5.12 / 4 + 4) / get('Clock_freq')]
+        t_pipeline_cycles = [1, 1, 1, 1, 1]
+        # activity = [12 * 10 * 8 / (16 * 16 * 64 * 2 * 2 * 3),
+        #             100 * 10 * 8 / (7 * 7 * 64 * 2 * 2 * 64),
+        #             100 * 10 * 8 / (3136 * 1024),
+        #             100 * 10 * 8 / (1024 * 512),
+        #             100 * 10 * 4 / (512 * 10)]
+        # t_pipeline_array = [(8 * numpy.ceil(25.6)) / get('Clock_freq'),
+        #                     (numpy.ceil(4.9) * numpy.ceil(2.56 * 64 / 8)) / get('Clock_freq'),
+        #                     (numpy.ceil(102.4) * numpy.ceil(31.36 / 8)) / get('Clock_freq'),
+        #                     (numpy.ceil(51.2) * numpy.ceil(10.24 / 8)) / get('Clock_freq'),
+        #                     (numpy.ceil(5.12) / 4) / get('Clock_freq')]
+        # t_pipeline_cycles = [1, 2, 3, 4, 5]
         total_ops = 16 * 16 * 64 * (2 * 2 * 3) + 7 * 7 * 64 * (2 * 2 * 64) + 3136 * 1024 + 1024 * 512 + 512 * 10
         custom_transformX = None
     else:
@@ -147,14 +151,14 @@ def performance_inference(net, train, mode):
             power2 = p2 / sum(class_total)
             power3 = p3 / sum(class_total)
             power4 = p4 / sum(class_total)
-        t_total = (t_pipeline_array[0] + t_pipeline_peri[0] +
-                   t_pipeline_array[1] + t_pipeline_peri[1] +
-                   t_pipeline_array[2] + t_pipeline_peri[2] +
-                   t_pipeline_array[3] + t_pipeline_peri[3])
-        power_avg = (power1 * t_pipeline_array[0] * activity[0] +
-                     power2 * t_pipeline_array[1] * activity[1] +
-                     power3 * t_pipeline_array[2] * activity[2] +
-                     power4 * t_pipeline_array[3] * activity[3]) / t_total
+        t_total = (t_pipeline_array[0] * t_pipeline_cycles[0] +
+                   t_pipeline_array[1] * t_pipeline_cycles[1] +
+                   t_pipeline_array[2] * t_pipeline_cycles[2] +
+                   t_pipeline_array[3] * t_pipeline_cycles[3])
+        power_avg = (power1 * t_pipeline_array[0] * t_pipeline_cycles[0] * activity[0] +
+                     power2 * t_pipeline_array[1] * t_pipeline_cycles[1] * activity[1] +
+                     power3 * t_pipeline_array[2] * t_pipeline_cycles[2] * activity[2] +
+                     power4 * t_pipeline_array[3] * t_pipeline_cycles[3] * activity[3]) / t_total
         ops_avg = total_ops / t_total
         ops_w_avg = ops_avg / power_avg
     elif get('Train_dataset_type') == 'CIFAR10':
@@ -170,16 +174,16 @@ def performance_inference(net, train, mode):
             power3 = p3 / sum(class_total)
             power4 = p4 / sum(class_total)
             power5 = p5 / sum(class_total)
-        t_total = (t_pipeline_array[0] + t_pipeline_peri[0] +
-                   t_pipeline_array[1] + t_pipeline_peri[1] +
-                   t_pipeline_array[2] + t_pipeline_peri[2] +
-                   t_pipeline_array[3] + t_pipeline_peri[3] +
-                   t_pipeline_array[4] + t_pipeline_peri[4])
-        power_avg = (power1 * t_pipeline_array[0] * activity[0] +
-                     power2 * t_pipeline_array[1] * activity[1] +
-                     power3 * t_pipeline_array[2] * activity[2] +
-                     power4 * t_pipeline_array[3] * activity[3] +
-                     power5 * t_pipeline_array[4] * activity[4]) / t_total
+        t_total = (t_pipeline_array[0] * t_pipeline_cycles[0] +
+                   t_pipeline_array[1] * t_pipeline_cycles[1] +
+                   t_pipeline_array[2] * t_pipeline_cycles[2] +
+                   t_pipeline_array[3] * t_pipeline_cycles[3] +
+                   t_pipeline_array[4] * t_pipeline_cycles[4])
+        power_avg = (power1 * t_pipeline_array[0] * t_pipeline_cycles[0] * activity[0] +
+                     power2 * t_pipeline_array[1] * t_pipeline_cycles[1] * activity[1] +
+                     power3 * t_pipeline_array[2] * t_pipeline_cycles[2] * activity[2] +
+                     power4 * t_pipeline_array[3] * t_pipeline_cycles[3] * activity[3] +
+                     power5 * t_pipeline_array[4] * t_pipeline_cycles[4] * activity[4]) / t_total
         ops_avg = total_ops / t_total
         ops_w_avg = ops_avg / power_avg
     else:

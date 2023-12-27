@@ -116,11 +116,13 @@ if __name__ == '__main__':
         ut.print_info('Prune operation is skipped', current_name)
 
     """Quantization"""
+    quantized_net = None
     if not get('Q_skip'):
         if not get('Q_Read'):
             # nonideal: variation aware 的量化，ideal: 根据理想器件响应的量化
-            quantized_net, quantized_weight_lut_sets, quantized_tag_lut_sets, quantized_tensor_tag, quant_scale_sets, \
-            quant_bias_sets = NN_Quantization.quantization(net, get('Device_File_ideal'), get('Quantization_Method'))
+            (quantized_net, quantized_weight_lut_sets, quantized_tag_lut_sets,
+             quantized_tensor_tag, quant_scale_sets, quant_bias_sets) =\
+                NN_Quantization.quantization(net, get('Device_File_ideal'), get('Quantization_Method'))
             if not get('Q_inference_skip'):
                 NN_Inference.inference(quantized_net, False, 'Quant')
                 if get('TrainSet_Inference'):
@@ -159,7 +161,7 @@ if __name__ == '__main__':
     if get('Performance_estimate') and (not get('Q_skip')):
         refresh_rate = get('Refresh_rate')
         power_net = HardNet.power_net_prepare(quantized_net, get('Device_File_ideal'), get('Quantization_Method'))
-        [total_ops, t_total, power_avg, ops_avg, ops_w_avg] =\
+        [total_ops, t_total, power_avg, ops_avg, ops_w_avg] = \
             NN_Inference.performance_inference(power_net, False, 'Quant')
         [total_cap_area, total_refresh_energy, total_refresh_time, all_area] = HardNet.capacitance_net(
             quantized_net, get('Device_File_area'), get('Quantization_Method'))
