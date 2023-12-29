@@ -19,7 +19,7 @@ This is a computing in memory simulator/evaluator tools. Based on the device's p
 基于Crossbar结构的并行向量·矩阵乘法的运算，对卷积算子进行稀疏化的映射：
 ![Operator Mapping](https://github.com/YunTing-k/CiM-eDRAM/blob/master/img/img6.png?raw=true)
 
-## 第一层卷积层的映射
+## 例子：第一层卷积层的映射
 将第一层卷积层实现用12×10的CiM Tile组合的子阵列映射，每一次计算就是对一个小CiM Tile的激励与输出采样，以避免所有阵列全部打开带来的高功耗以及过高的全局电流密度，同时利用较小的Tile进行计算以避免可能的寄生参数影响。同时为了加快吞吐率，将卷积算子空间上展开8行，并且并行展开8次(对应了第一层卷积算子的64个卷积张量)。
 ![Conv-1](https://github.com/YunTing-k/CiM-eDRAM/blob/master/img/img4.png?raw=true)
 
@@ -46,7 +46,7 @@ This is a computing in memory simulator/evaluator tools. Based on the device's p
 ## 项目构建
 - Pycharm工程
 - 基于Python 3.9.7
-- pytorch 1.10, CUDA 11.3, cuDNN8.0
+- pytorch 1.10.2, CUDA 11.3, cuDNN8.0
 ```
 - blas=1.0=mkl
 - brotli=1.0.9
