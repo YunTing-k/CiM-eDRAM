@@ -121,7 +121,7 @@ if __name__ == '__main__':
         if not get('Q_Read'):
             # nonideal: variation aware 的量化，ideal: 根据理想器件响应的量化
             (quantized_net, quantized_weight_lut_sets, quantized_tag_lut_sets,
-             quantized_tensor_tag, quant_scale_sets, quant_bias_sets) =\
+             quantized_tensor_tag, quant_scale_sets, quant_bias_sets) = \
                 NN_Quantization.quantization(net, get('Device_File_ideal'), get('Quantization_Method'))
             if not get('Q_inference_skip'):
                 NN_Inference.inference(quantized_net, False, 'Quant')
@@ -181,6 +181,11 @@ if __name__ == '__main__':
         ut.print_param('  ----Area Efficiency: %.6e TOPS/mm2' % (area_efficiency * 1e-12))
         if total_refresh_time > (1 / refresh_rate[1]):  # 目标刷新时间短于最短时间
             ut.print_warn('Target inference refresh frequency is too high', current_name)
+        ut.print_param('  ----Average Inference Computing Power: %.4f μW, %.4f%% of total' %
+                       (power_avg * 1e6, 100 * power_avg / (power_avg + total_refresh_energy * refresh_rate[0])))
+        ut.print_param('  ----Average Inference Refreshing Power: %.4f μW, %.4f%% of total' %
+                       (total_refresh_energy * refresh_rate[0] * 1e6, 100 * (total_refresh_energy * refresh_rate[0]) /
+                        (power_avg + total_refresh_energy * refresh_rate[0])))
         ut.print_param('  ----Inference Energy Efficiency: %.6f TOPS/W' % (inference_ops_w * 1e-12))
         if total_refresh_time > (1 / refresh_rate[1]):  # 目标刷新时间短于最短时间
             ut.print_warn('Target training refresh frequency is too high', current_name)

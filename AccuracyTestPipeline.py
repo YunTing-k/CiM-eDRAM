@@ -36,7 +36,7 @@ if __name__ == '__main__':
     unroll = quant_map_optimize  # False = 不展开网络 True = 展开网络
     noise_aware = quant_map_optimize  # False = 用理想数据做量化 True = 用含噪声的数据做量化
     noise_induced = True  # False = 不包含噪声 True = 包含噪声
-    repeat_num = 15  # 一种情况下测试多少次
+    repeat_num = 20  # 一种情况下测试多少次
     variation_set = ['1%', '2%', '5%', '10%', '15%', '20%', '26%', '30%']
     # variation_set = ['1%', '30%']
     variation_num = len(variation_set)
@@ -105,8 +105,8 @@ if __name__ == '__main__':
         if noise_induced:
             """Traverse the variation"""
             for net_variation in range(variation_num):
-                gpm.set_param('Device_File_nonideal', './Device/ZnO/4bit/nonideal/' + variation_set[net_variation] + '/')
-                gpm.set_param('Device_File_ideal', './Device/ZnO/4bit/ideal/')  # 曲线器件响应数据的路径
+                gpm.set_param('Device_File_nonideal', './Device/ZnO/4bit/linear/nonideal/' + variation_set[net_variation] + '/')
+                gpm.set_param('Device_File_ideal', './Device/ZnO/4bit/linear/ideal/')  # 曲线器件响应数据的路径
                 if noise_aware:
                     quantized_net, quantized_weight_lut_sets, quantized_tag_lut_sets, \
                     quantized_tensor_tag, quant_scale_sets, quant_bias_sets \

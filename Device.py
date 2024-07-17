@@ -25,15 +25,15 @@ def set_default_param():
     gpm.set_param('Max_vin', 0.1)  # 最大输入电压 V
     gpm.set_param('Store_voltage', 3)  # 权重存储电压
     gpm.set_param('If_Area_Scale', True)
-    gpm.set_param('Width_Scale_factor', 1)  # 缩放比例 FET 宽度 缩放比例
-    gpm.set_param('Length_Scale_Factor', 1)  # 缩放比例 FET 沟道长度 缩放比例
+    gpm.set_param('Width_Scale_factor', 1e-3)  # 缩放比例 FET 宽度 缩放比例
+    gpm.set_param('Length_Scale_Factor', 0.5e-3)  # 缩放比例 FET 沟道长度 缩放比例
     gpm.set_param('If_Power_Scale', True)
     gpm.set_param('Conductance_Scale_Factor',  # 电导缩放比例
                   gpm.get_param('Width_Scale_factor') / gpm.get_param('Length_Scale_Factor'))
     gpm.set_param('Clock_freq', 100000000)  # 运算频率 Hz
     gpm.set_param('Unit_cap', 8.02e-3)  # 单位电容 pF/um2
     gpm.set_param('Read_Area', 3200)  # um2 40*10*4*2
-    gpm.set_param('Refresh_rate', [1/10000, 1000])  # 权重刷新频率 Hz [不进行频繁刷新的场景 进行频繁刷新的场景]
+    gpm.set_param('Refresh_rate', [1000 * 2000 * 1/10000, 1000])  # 权重刷新频率 Hz [不进行频繁刷新的场景:inference 进行频繁刷新的场景training]
     ut.print_info('Device parameters added', current_name)
 
 

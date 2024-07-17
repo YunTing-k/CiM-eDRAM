@@ -42,6 +42,7 @@ def set_default_param():
     gpm.set_param('Train_loss_type', 'CrossEntropyLoss')  # 默认为交叉熵函数
     # 训练使用device
     gpm.set_param('Train_device', 'cuda:0')  # 默认使用GPU训练
+    # gpm.set_param('Train_device', 'cpu')  # 默认使用CPU推理
     # 权重裁剪
     gpm.set_param('Train_if_clipweight', False)  # 是否裁剪权重
     gpm.set_param('Train_clipweight_range', (-1, 1))  # 裁剪权重范围

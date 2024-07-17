@@ -10,6 +10,7 @@ current_name = os.path.basename(__file__)  # 当前模块名字
 def set_default_param():
     """设置默认参数"""
     gpm.set_param('Inference_device', 'cuda:0')  # 默认使用GPU推理
+    # gpm.set_param('Inference_device', 'cpu')  # 默认使用CPU推理
     if gpm.get_param('Inference_device') == 'cuda:0':
         if not torch.cuda.is_available():  # 无法调用CUDA
             gpm.set_param('Inference_device', 'cpu')
